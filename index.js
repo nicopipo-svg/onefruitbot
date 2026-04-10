@@ -1,4 +1,3 @@
-npm install pg
 
 const { Pool } = require("pg");
 
