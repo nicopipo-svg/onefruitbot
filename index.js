@@ -1,8 +1,6 @@
 const { Client, GatewayIntentBits } = require("discord.js");
 const { Client: PGClient } = require("pg");
 
-const { Client } = require("pg");
-
 const { Pool } = require("pg");
 
 const pool = new Pool({
