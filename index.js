@@ -1,18 +1,20 @@
-const { Client, GatewayIntentBits } = require("discord.js");
-const { Client: PGClient } = require("pg");
+npm install pg
 
 const { Pool } = require("pg");
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
-const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages]
+  ssl: { rejectUnauthorized: false }
 });
 
+pool.connect()
+  .then(() => console.log("✅ DB connectée"))
+  .catch(err => console.log("❌ DB erreur:", err));
+
+pool.query("SELECT NOW()", (err, res) => {
+  if (err) console.log(err);
+  else console.log("Test DB OK :", res.rows);
+});
 // ============================================================
 // CONSTANTES
 // ============================================================
