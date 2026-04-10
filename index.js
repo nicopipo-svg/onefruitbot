@@ -57,21 +57,21 @@ const HAKI_TYPES = [
     label:    "Haki de l'Observation",
     emoji:    '👁️',
     role:     "Haki Observation",
-    chance:   65,   // 65%
+    chance:   10,   // 65%
   },
   {
     key:      'armement',
     label:    "Haki de l'Armement",
     emoji:    '⚔️',
     role:     "Haki Armement",
-    chance:   55,   // 55%
+    chance:   10,   // 55%
   },
   {
     key:      'rois',
     label:    "Haki des Rois",
     emoji:    '👑',
     role:     "Haki des Rois",
-    chance:   5,    // 5% — rare
+    chance:   1,    // 5% — rare
   },
 ];
 
@@ -792,9 +792,9 @@ client.on('interactionCreate', async (interaction) => {
         }
 
         // Premier tirage — roll indépendant pour chaque Haki
-        let obs  = Math.random() * 100 < 65;
-        let arm  = Math.random() * 100 < 55;
-        let rois = Math.random() * 100 < 5;
+        let obs  = Math.random() * 100 < 10;
+        let arm  = Math.random() * 100 < 10;
+        let rois = Math.random() * 100 < 1;
 
         await saveHaki(userId, obs, arm, rois);
 
