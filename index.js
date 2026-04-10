@@ -1405,48 +1405,6 @@ client.on('interactionCreate', async (interaction) => {
     }
   }
 });
-
-const { ChannelType } = require("discord.js");
-
-async function createZone(interaction) {
-  const input = interaction.options.getString("zone");
-
-  const lines = input.split("\n");
-
-  const categoryName = lines[0];
-  const subChannels = lines.slice(1);
-
-  // Créer la catégorie
-  const category = await interaction.guild.channels.create({
-    name: categoryName,
-    type: ChannelType.GuildCategory
-  });
-
-  // Créer les salons
-  for (let sub of subChannels) {
-    sub = sub.replace("-", "").trim();
-
-    await interaction.guild.channels.create({
-      name: sub.toLowerCase().replace(/ /g, "-"),
-      type: ChannelType.GuildText,
-      parent: category.id
-    });
-  }
-
-  await interaction.reply(`✅ Zone **${categoryName}** créée !`);
-}
-{
-  name: "createzone",
-  description: "Créer une zone RP avec catégories et salons",
-  options: [
-    {
-      name: "zone",
-      type: 3,
-      description: "Structure de la zone",
-      required: true
-    }
-  ]
-}
 // ============================================================
 // DÉMARRAGE
 // ============================================================
