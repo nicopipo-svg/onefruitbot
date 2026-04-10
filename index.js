@@ -1,22 +1,14 @@
 const { Client, GatewayIntentBits } = require("discord.js");
 const { Client: PGClient } = require("pg");
 
-const db = new PGClient({
+const { Client } = require("pg");
+
+const { Pool } = require("pg");
+
+const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
 });
-
-db.connect();
-
-db.query(`
-CREATE TABLE IF NOT EXISTS players (
-  id TEXT PRIMARY KEY,
-  hp INT DEFAULT 100,
-  attack INT DEFAULT 10,
-  defense INT DEFAULT 5,
-  money INT DEFAULT 0
-);
-`);
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages]
