@@ -1,12 +1,26 @@
-const { Client, GatewayIntentBits } = require('discord.js');
-const { Pool } = require('pg');
+const { Client, GatewayIntentBits } = require("discord.js");
+const { Client: PGClient } = require("pg");
 
-const token = process.env.DISCORD_TOKEN;
-if (!token) { console.error('DISCORD_TOKEN manquant !'); process.exit(1); }
-if (!process.env.DATABASE_URL) { console.error('DATABASE_URL manquant !'); process.exit(1); }
+const db = new PGClient({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
-const pool   = new Pool({ connectionString: process.env.DATABASE_URL });
+db.connect();
+
+db.query(`
+CREATE TABLE IF NOT EXISTS players (
+  id TEXT PRIMARY KEY,
+  hp INT DEFAULT 100,
+  attack INT DEFAULT 10,
+  defense INT DEFAULT 5,
+  money INT DEFAULT 0
+);
+`);
+
+const client = new Client({
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages]
+});
 
 // ============================================================
 // CONSTANTES
@@ -741,9 +755,6 @@ client.on('interactionCreate', async (interaction) => {
         let arm  = Math.random() * 100 < 55;
         let rois = Math.random() * 100 < 5;
 
-        // Garantie : au moins l'Observation si rien n'est sorti
-        if (!obs && !arm && !rois) obs = true;
-
         await saveHaki(userId, obs, arm, rois);
 
         // Assignation des rôles Discord
@@ -1368,3 +1379,5 @@ client.on('interactionCreate', async (interaction) => {
 client.once('clientReady', (c) => {
   console.log(`✅ Bot en ligne : ${c.user.tag}`);
 });
+
+client.login(process.env.TOKEN);
