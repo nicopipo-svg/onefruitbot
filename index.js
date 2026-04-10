@@ -525,14 +525,41 @@ function rollFruitType() {
   return             { fruitType: 'Zoan',     item: 'Fruit du Démon Zoan 🐉' };
 }
 
+
+// ============================================================
+// PERMISSIONS ADMIN
+// ============================================================
+
+function isAdmin(interaction) {
+  const member = interaction.member;
+  if (!member) return false;
+  // Propriétaire du serveur
+  if (interaction.guild && interaction.guild.ownerId === interaction.user.id) return true;
+  // Permission ADMINISTRATOR
+  return member.permissions && member.permissions.has('Administrator');
+}
+
+async function checkAdminPermission(interaction) {
+  if (!isAdmin(interaction)) {
+    await interaction.reply({
+      content: '🚫 Tu n\'as pas la permission d\'utiliser cette commande. Elle est réservée aux administrateurs.',
+      ephemeral: true,
+    });
+    return false;
+  }
+  return true;
+}
+
 // ============================================================
 // HANDLER
 // ============================================================
-
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
   try {
+
+    // ── COMMANDES JOUEUR ──────────────────────────────────────
+    // Accessibles à tous les membres du serveur
 
     // ── /loot ──────────────────────────────────────────────────
     if (interaction.commandName === 'loot') {
@@ -597,19 +624,10 @@ client.on('interactionCreate', async (interaction) => {
       return interaction.reply(`🎒 Inventaire : ${inv.join(', ') || 'vide'}`);
     }
 
-    // ── /prime ─────────────────────────────────────────────────
+    // ── /prime voir ────────────────────────────────────────────
     if (interaction.commandName === 'prime') {
       const sub   = interaction.options.getSubcommand();
       const cible = interaction.options.getUser('joueur');
-
-      if (sub === 'ajouter') {
-        const montant = interaction.options.getInteger('montant');
-        await addBounty(cible.id, montant);
-        const total = await getBounty(cible.id);
-        return interaction.reply(
-          `🔴 La prime de **${cible.username}** est maintenant de **${formatBerries(total)} Berries** !`
-        );
-      }
 
       if (sub === 'voir') {
         const prime = await getBounty(cible.id);
@@ -617,6 +635,17 @@ client.on('interactionCreate', async (interaction) => {
           prime === 0
             ? `📋 **${cible.username}** n'a pas encore de prime.`
             : `🔴 Prime de **${cible.username}** : **${formatBerries(prime)} Berries**`
+        );
+      }
+
+      // ── /prime ajouter (admin) ─────────────────────────────
+      if (sub === 'ajouter') {
+        if (!await checkAdminPermission(interaction)) return;
+        const montant = interaction.options.getInteger('montant');
+        await addBounty(cible.id, montant);
+        const total = await getBounty(cible.id);
+        return interaction.reply(
+          `🔴 La prime de **${cible.username}** est maintenant de **${formatBerries(total)} Berries** !`
         );
       }
     }
@@ -662,7 +691,9 @@ client.on('interactionCreate', async (interaction) => {
         );
       }
 
+      // ── /shop ajouter & retirer (admin) ───────────────────
       if (sub === 'ajouter') {
+        if (!await checkAdminPermission(interaction)) return;
         const nom  = interaction.options.getString('nom').trim();
         const prix = interaction.options.getInteger('prix');
         const key  = nom.toLowerCase();
@@ -680,6 +711,7 @@ client.on('interactionCreate', async (interaction) => {
       }
 
       if (sub === 'retirer') {
+        if (!await checkAdminPermission(interaction)) return;
         const nom = interaction.options.getString('nom').trim();
         const ok  = await removeShopItem(nom.toLowerCase());
         return interaction.reply(
@@ -708,7 +740,9 @@ client.on('interactionCreate', async (interaction) => {
         return interaction.reply(`🎲 **Pool de loot (9%) :**\n${lines.join('\n')}`);
       }
 
+      // ── /lootpool ajouter & retirer (admin) ───────────────
       if (sub === 'ajouter') {
+        if (!await checkAdminPermission(interaction)) return;
         const nom    = interaction.options.getString('nom').trim();
         const rarete = interaction.options.getString('rarete');
         const items  = await getLootPool();
@@ -723,6 +757,7 @@ client.on('interactionCreate', async (interaction) => {
       }
 
       if (sub === 'retirer') {
+        if (!await checkAdminPermission(interaction)) return;
         const nom = interaction.options.getString('nom').trim();
         const ok  = await removeLootItem(nom);
         return interaction.reply(
@@ -804,8 +839,12 @@ client.on('interactionCreate', async (interaction) => {
         return interaction.reply(msg);
       }
 
-      // ---- haki reset ----
+      // ── COMMANDES ADMIN ───────────────────────────────────────
+      // Réservées aux propriétaires du serveur et administrateurs
+
+      // ---- haki reset (admin) ----
       if (sub === 'reset') {
+        if (!await checkAdminPermission(interaction)) return;
         const cible = interaction.options.getUser('joueur');
         await resetHaki(cible.id);
         return interaction.reply({
@@ -1366,6 +1405,7 @@ client.on('interactionCreate', async (interaction) => {
     }
   }
 });
+
 
 // ============================================================
 // DÉMARRAGE
