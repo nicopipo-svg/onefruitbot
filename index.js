@@ -1,5 +1,19 @@
+const { Client, GatewayIntentBits } = require('discord.js');
 
 const { Pool } = require("pg");
+
+const token = process.env.TOKEN;
+
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+  ],
+});
+
+client.on('error', (err) => {
+  console.error('❌ Erreur client Discord :', err);
+});
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -1368,8 +1382,6 @@ client.on('interactionCreate', async (interaction) => {
   }
 })();
 
-client.once('clientReady', (c) => {
+client.once('ready', (c) => {
   console.log(`✅ Bot en ligne : ${c.user.tag}`);
 });
-
-client.login(process.env.TOKEN);
